@@ -1,0 +1,2334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Sauve la lune! — French Passé Composé Space Defense</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- jsPDF for Victory Certificate PDF Generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Google Fonts: Fredoka (playful cosmic headers) & Inter (crisp UI & French accents) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --space-deep: #070b1e;
+      --space-mid: #131b3a;
+      --french-blue: #2563eb;
+      --french-red: #e11d48;
+      --croissant-gold: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    input {
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at 50% 20%, #131b3a 0%, #070b1e 75%);
+      color: #f8fafc;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    .font-display {
+      font-family: 'Fredoka', sans-serif;
+    }
+
+    /* Tricolor subtle glow border */
+    .tricolor-border {
+      position: relative;
+      background: linear-gradient(145deg, rgba(19, 27, 58, 0.94), rgba(7, 11, 30, 0.97));
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.65),
+        -12px 0 35px -15px rgba(37, 99, 235, 0.45),
+        12px 0 35px -15px rgba(225, 29, 72, 0.45);
+    }
+
+    .tricolor-bar {
+      height: 5px;
+      background: linear-gradient(90deg, #2563eb 0%, #2563eb 33.3%, #ffffff 33.3%, #ffffff 66.6%, #e11d48 66.6%, #e11d48 100%);
+    }
+
+    /* Game Arcade Buttons */
+    .btn-cosmic {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      border: 1px solid rgba(147, 197, 253, 0.45);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+    }
+    .btn-cosmic:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.08);
+      box-shadow: 0 10px 26px rgba(37, 99, 235, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+    .btn-cosmic:active {
+      transform: translateY(1px);
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      border: 1px solid rgba(253, 230, 138, 0.55);
+      box-shadow: 0 6px 22px rgba(245, 158, 11, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+    }
+    .btn-gold:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.07);
+      box-shadow: 0 10px 28px rgba(245, 158, 11, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+    .btn-gold:active {
+      transform: translateY(1px);
+    }
+
+    /* Subtle floating animation for story illustrations */
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-7px); }
+    }
+    .animate-float {
+      animation: floatSlow 4s ease-in-out infinite;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 16px rgba(245, 158, 11, 0.35); }
+      50% { box-shadow: 0 0 28px rgba(245, 158, 11, 0.75); }
+    }
+    .verb-badge-glow {
+      animation: pulseGlow 2.8s ease-in-out infinite;
+    }
+
+    /* Custom scrollbar for small screens if needed */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(7, 11, 30, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.35);
+      border-radius: 999px;
+    }
+
+    #gameCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+      touch-action: none;
+    }
+  </style>
+</head>
+<body class="flex flex-col h-screen w-screen overflow-hidden">
+
+  <!-- ==================== TOP HEADS-UP DISPLAY (HUD) ==================== -->
+  <header id="gameHud" class="hidden z-20 w-full bg-slate-950/85 backdrop-blur-md border-b border-slate-800/90 px-3 sm:px-6 py-2 shadow-lg">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 sm:gap-4">
+
+      <!-- Left: Round & Target Verb -->
+      <div class="flex items-center gap-2 sm:gap-4">
+        <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-1.5 text-center">
+          <div class="text-[10px] uppercase tracking-wider text-blue-300 font-semibold">Round</div>
+          <div class="font-display text-base sm:text-xl font-bold text-white leading-tight">
+            <span id="hudRound">1</span><span class="text-slate-400 text-sm">/10</span>
+          </div>
+        </div>
+
+        <!-- Prominent Target Infinitive Verb -->
+        <div class="verb-badge-glow bg-gradient-to-r from-blue-950 via-slate-900 to-rose-950 border-2 border-amber-400/70 rounded-2xl px-4 py-1.5 flex items-center gap-3">
+          <div>
+            <div class="text-[10px] uppercase tracking-widest text-amber-300 font-bold flex items-center gap-1">
+              <span>Target Verb</span>
+              <span id="hudVerbAuxHint" class="hidden sm:inline-block text-[9px] bg-slate-800/90 text-slate-300 px-1.5 py-0.5 rounded-full border border-slate-600/60">Passé Composé</span>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span id="hudTargetVerb" class="font-display text-xl sm:text-2xl md:text-3xl font-bold text-white tracking-wide">devenir</span>
+              <span id="hudVerbEnglish" class="text-xs sm:text-sm text-sky-200/90 italic font-medium">(to become)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center: Round Progress Bar (0 / 1,200 pts) & Total Score -->
+      <div class="flex items-center gap-3 sm:gap-5 order-3 md:order-2 w-full md:w-auto justify-between md:justify-center">
+        <div class="flex-1 md:w-52 lg:w-64">
+          <div class="flex justify-between text-[11px] font-semibold mb-1">
+            <span class="text-sky-300">Round Goal</span>
+            <span class="text-amber-300"><span id="hudRoundScore">0</span> / 1,200 pts</span>
+          </div>
+          <div class="w-full h-3 bg-slate-800/90 rounded-full overflow-hidden border border-slate-700/80 p-0.5">
+            <div id="hudRoundBar" class="h-full rounded-full bg-gradient-to-r from-blue-500 via-sky-400 to-amber-400 transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-1.5 text-right min-w-[92px]">
+          <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Total Score</div>
+          <div id="hudTotalScore" class="font-display text-base sm:text-xl font-bold text-emerald-400 leading-tight">0</div>
+        </div>
+      </div>
+
+      <!-- Right: Croissant Lives & Sound Toggle -->
+      <div class="flex items-center gap-2 sm:gap-3 order-2 md:order-3">
+        <div class="bg-slate-900/90 border border-amber-500/40 rounded-xl px-2.5 sm:px-3.5 py-1.5 flex items-center gap-2" title="Croissant Lives">
+          <div id="hudCroissants" class="flex items-center gap-1 flex-wrap max-w-[150px] sm:max-w-[210px]">
+            <!-- Croissant SVGs injected dynamically -->
+          </div>
+          <span id="hudCroissantCount" class="font-display text-sm sm:text-base font-bold text-amber-300 ml-0.5">5</span>
+        </div>
+
+        <button id="muteToggleBtn" type="button" aria-label="Toggle Sound" class="p-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-slate-600/70 text-slate-200 transition">
+          <!-- Speaker On SVG -->
+          <svg id="iconSoundOn" class="w-5 h-5 text-sky-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14" />
+          </svg>
+          <!-- Speaker Muted SVG -->
+          <svg id="iconSoundOff" class="w-5 h-5 text-rose-400 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6" />
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ==================== MAIN CANVAS ARENA ==================== -->
+  <main class="relative flex-1 w-full h-full overflow-hidden">
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Bottom Controls Hint Pill during Active Play -->
+    <div id="controlsHintPill" class="hidden pointer-events-none absolute bottom-2 right-3 z-10 bg-slate-950/70 border border-slate-700/60 backdrop-blur-sm rounded-full px-3 py-1 text-[11px] text-slate-300">
+      Aim: <span class="text-sky-300 font-semibold">Mouse / ← →</span> &bull; Fire: <span class="text-amber-300 font-semibold">Click / Space</span>
+    </div>
+
+    <!-- ==================== INTRO STORY & REGISTRATION MODAL ==================== -->
+    <section id="introOverlay" class="absolute inset-0 z-30 flex items-center justify-center p-3 sm:p-6 bg-slate-950/75 backdrop-blur-sm overflow-y-auto">
+      <div class="tricolor-border rounded-3xl w-full max-w-3xl overflow-hidden my-auto">
+        <div class="tricolor-bar"></div>
+
+        <!-- Header Bar of Intro Card -->
+        <div class="px-5 sm:px-8 pt-5 pb-3 flex items-center justify-between border-b border-slate-800/80">
+          <div class="flex items-center gap-2.5">
+            <span class="text-2xl sm:text-3xl">🌙</span>
+            <div>
+              <h1 class="font-display text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-sky-300 via-white to-rose-300 bg-clip-text text-transparent">
+                Sauve la lune!
+              </h1>
+              <p class="text-xs text-slate-400 font-medium">Lunar Defense &bull; French Passé Composé Academy</p>
+            </div>
+          </div>
+
+          <!-- Step Indicator Dots -->
+          <div class="flex items-center gap-2">
+            <span id="stepBadge" class="text-xs font-semibold text-sky-300 bg-blue-950/80 border border-blue-700/50 px-3 py-1 rounded-full">
+              Briefing 1 of 3
+            </span>
+          </div>
+        </div>
+
+        <!-- SLIDE 1: Story Part 1 — Exodus to the Moon -->
+        <div id="slide1" class="p-5 sm:p-8 space-y-5">
+          <div class="relative rounded-2xl overflow-hidden bg-gradient-to-b from-[#0b1332] to-[#172554] border border-sky-500/25 p-4 sm:p-6 flex flex-col sm:flex-row items-center gap-5">
+            <!-- Custom Illustrated SVG Scene: Humanity's Lunar Colony -->
+            <div class="w-full sm:w-56 flex-shrink-0 flex justify-center animate-float">
+              <svg viewBox="0 0 220 160" class="w-48 h-36 drop-shadow-[0_0_18px_rgba(56,189,248,0.35)]">
+                <defs>
+                  <radialGradient id="earthGrad" cx="40%" cy="35%" r="60%">
+                    <stop offset="0%" stop-color="#60a5fa" />
+                    <stop offset="65%" stop-color="#1d4ed8" />
+                    <stop offset="100%" stop-color="#1e1b4b" />
+                  </radialGradient>
+                  <radialGradient id="moonSurf" cx="50%" cy="15%" r="85%">
+                    <stop offset="0%" stop-color="#f1f5f9" />
+                    <stop offset="70%" stop-color="#cbd5e1" />
+                    <stop offset="100%" stop-color="#64748b" />
+                  </radialGradient>
+                </defs>
+                <!-- Stars -->
+                <circle cx="25" cy="22" r="1.5" fill="#fff" />
+                <circle cx="190" cy="28" r="2" fill="#fde68a" />
+                <circle cx="145" cy="18" r="1.3" fill="#fff" />
+                <circle cx="70" cy="40" r="1.2" fill="#93c5fd" />
+                <!-- Distant Earth -->
+                <circle cx="48" cy="45" r="20" fill="url(#earthGrad)" />
+                <path d="M38 38 Q48 33 55 42 Q49 51 39 47 Z" fill="#34d399" opacity="0.75" />
+                <!-- Rocket arc from Earth to Moon -->
+                <path d="M68 48 Q115 32 132 82" fill="none" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="4 4" />
+                <polygon points="134,85 126,78 135,75" fill="#f59e0b" />
+                <!-- Moon Horizon -->
+                <path d="M0 125 Q110 82 220 125 L220 160 L0 160 Z" fill="url(#moonSurf)" />
+                <ellipse cx="55" cy="135" rx="14" ry="5" fill="#94a3b8" />
+                <ellipse cx="170" cy="138" rx="18" ry="6" fill="#94a3b8" />
+                <!-- Lunar Colony Dome & Mini Eiffel Tower -->
+                <path d="M75 112 A35 28 0 0 1 145 112 Z" fill="rgba(56, 189, 248, 0.28)" stroke="#7dd3fc" stroke-width="2" />
+                <!-- Mini Eiffel Tower inside Dome -->
+                <path d="M110 88 L103 112 M110 88 L117 112 M105 103 L115 103 M107 96 L113 96" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" />
+                <circle cx="110" cy="86" r="2" fill="#fef08a" />
+                <!-- Tricolor Flag -->
+                <line x1="154" y1="92" x2="154" y2="115" stroke="#e2e8f0" stroke-width="2" />
+                <rect x="155" y="92" width="6" height="10" fill="#2563eb" />
+                <rect x="161" y="92" width="6" height="10" fill="#ffffff" />
+                <rect x="167" y="92" width="6" height="10" fill="#e11d48" />
+              </svg>
+            </div>
+
+            <div class="space-y-2.5 text-center sm:text-left">
+              <div class="inline-block px-3 py-1 rounded-full bg-sky-500/20 border border-sky-400/40 text-sky-300 text-xs font-bold uppercase tracking-wider">
+                Chapter I &bull; Exodus to the Moon
+              </div>
+              <h2 class="font-display text-xl sm:text-2xl font-bold text-white">
+                Humanity's New Home Among the Stars
+              </h2>
+              <p class="text-slate-200 text-sm sm:text-base leading-relaxed">
+                When severe climate storms and global disasters threatened humanity with extinction on Earth, pioneers from around the world united to build a peaceful sanctuary on the Moon: <span class="text-amber-300 font-semibold">Nouvelle-Lumière</span>.
+              </p>
+              <p class="text-slate-300 text-sm leading-relaxed">
+                Beneath shimmering lunar domes—complete with bakeries baking fresh cosmic croissants and a glowing Eiffel Spire—humanity finally found hope and survival.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex justify-end pt-1">
+            <button type="button" onclick="goToSlide(2)" class="btn-cosmic text-white font-display font-semibold px-6 py-3 rounded-2xl text-base flex items-center gap-2 cursor-pointer">
+              <span>Next: The Threat</span>
+              <span>&rarr;</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- SLIDE 2: Story Part 2 — The Asteroid Bombardment -->
+        <div id="slide2" class="hidden p-5 sm:p-8 space-y-5">
+          <div class="relative rounded-2xl overflow-hidden bg-gradient-to-b from-[#1e1035] to-[#0f172a] border border-rose-500/30 p-4 sm:p-6 flex flex-col sm:flex-row items-center gap-5">
+            <!-- Custom Illustrated SVG Scene: Asteroids Approaching Moon & Turret -->
+            <div class="w-full sm:w-56 flex-shrink-0 flex justify-center animate-float">
+              <svg viewBox="0 0 220 160" class="w-48 h-36 drop-shadow-[0_0_18px_rgba(244,63,94,0.4)]">
+                <!-- Warning Stars -->
+                <circle cx="30" cy="20" r="1.5" fill="#fff" />
+                <circle cx="195" cy="22" r="1.5" fill="#fff" />
+                <!-- Incoming Asteroids with Verb Tags -->
+                <g transform="translate(48, 35)">
+                  <polygon points="-16,-8 -5,-17 12,-14 18,0 10,15 -10,14 -18,3" fill="#64748b" stroke="#94a3b8" stroke-width="1.5" />
+                  <circle cx="-5" cy="-4" r="3" fill="#475569" />
+                  <rect x="-18" y="-7" width="36" height="14" rx="7" fill="#0f172a" stroke="#38bdf8" stroke-width="1.2" />
+                  <text x="0" y="3" text-anchor="middle" fill="#fff" font-size="8" font-weight="bold" font-family="Inter">suis</text>
+                </g>
+                <g transform="translate(158, 42)">
+                  <polygon points="-18,-6 -4,-16 14,-12 19,4 8,16 -12,13" fill="#78716c" stroke="#a8a29e" stroke-width="1.5" />
+                  <circle cx="6" cy="5" r="3.5" fill="#57534e" />
+                  <rect x="-24" y="-7" width="48" height="14" rx="7" fill="#0f172a" stroke="#fbbf24" stroke-width="1.2" />
+                  <text x="0" y="3" text-anchor="middle" fill="#fff" font-size="8" font-weight="bold" font-family="Inter">devenue</text>
+                </g>
+                <!-- Laser Beam -->
+                <line x1="110" y1="112" x2="62" y2="48" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" />
+                <line x1="110" y1="112" x2="62" y2="48" stroke="#ffffff" stroke-width="1" stroke-linecap="round" />
+                <!-- Moon Surface & Defense Cannon -->
+                <path d="M0 132 Q110 96 220 132 L220 160 L0 160 Z" fill="#cbd5e1" />
+                <rect x="96" y="110" width="28" height="12" rx="6" fill="#2563eb" stroke="#93c5fd" stroke-width="1.5" />
+                <line x1="110" y1="112" x2="98" y2="96" stroke="#f8fafc" stroke-width="5" stroke-linecap="round" />
+              </svg>
+            </div>
+
+            <div class="space-y-2.5 text-center sm:text-left">
+              <div class="inline-block px-3 py-1 rounded-full bg-rose-500/20 border border-rose-400/40 text-rose-300 text-xs font-bold uppercase tracking-wider">
+                Chapter II &bull; Alert: Asteroid Bombardment!
+              </div>
+              <h2 class="font-display text-xl sm:text-2xl font-bold text-white">
+                Defend the Colony with French Grammar!
+              </h2>
+              <p class="text-slate-200 text-sm sm:text-base leading-relaxed">
+                Disaster strikes! A massive swarm of asteroids is hurtling toward the lunar colony. To stop them, our engineers calibrated <span class="text-sky-300 font-semibold">Le Canon Lunaire</span> (the Lunar Defense Turret) to lock onto French <span class="text-amber-300 font-semibold">passé composé</span> verb forms.
+              </p>
+              <p class="text-slate-300 text-sm leading-relaxed">
+                Shatter every asteroid carrying a valid helping verb or past participle for the target verb—before they strike the Moon!
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-1">
+            <button type="button" onclick="goToSlide(1)" class="px-5 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-600/80 text-slate-200 font-semibold text-sm transition cursor-pointer">
+              &larr; Previous
+            </button>
+            <button type="button" onclick="goToSlide(3)" class="btn-cosmic text-white font-display font-semibold px-6 py-3 rounded-2xl text-base flex items-center gap-2 cursor-pointer">
+              <span>Next: Rules &amp; Cadet Sign-In</span>
+              <span>&rarr;</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- SLIDE 3: How to Play & Student First/Last Name Registration -->
+        <div id="slide3" class="hidden p-5 sm:p-7 space-y-4">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+            <!-- Instructions Column -->
+            <div class="lg:col-span-7 bg-slate-900/85 border border-slate-700/80 rounded-2xl p-4 space-y-2.5">
+              <h3 class="font-display text-lg font-bold text-amber-300 flex items-center gap-2">
+                <span>🎯</span>
+                <span>Mission Rules (How to Play)</span>
+              </h3>
+
+              <ul class="space-y-2 text-xs sm:text-sm text-slate-200 leading-snug">
+                <li class="flex items-start gap-2">
+                  <span class="text-sky-400 font-bold mt-0.5">1.</span>
+                  <span>Each round displays a French verb (e.g., <strong class="text-white">devenir</strong>). Shoot all asteroids showing its <strong class="text-sky-300">present-tense helping verb</strong> (<em>avoir</em> or <em>être</em>) OR a <strong class="text-amber-300">correct past participle</strong> (including feminine/plural forms like <em>devenu, devenue, devenus, devenues</em>!).</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-emerald-400 font-bold mt-0.5">2.</span>
+                  <span><strong class="text-emerald-400">+100 points</strong> per correct asteroid. Reach <strong class="text-amber-300">1,200 points</strong> to complete the round, advance to a new verb, and earn <strong class="text-amber-300">+1 bonus croissant</strong>!</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-rose-400 font-bold mt-0.5">3.</span>
+                  <span>Shooting a <strong class="text-rose-400">wrong word</strong> costs <strong class="text-rose-300">1 croissant</strong>. You start with <strong class="text-amber-300">5 croissants</strong>—lose them all and the game ends.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-orange-400 font-bold mt-0.5">4.</span>
+                  <span>Letting a <strong class="text-orange-300">correct asteroid</strong> reach the bottom costs <strong class="text-orange-300">-200 points</strong>.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-purple-400 font-bold mt-0.5">5.</span>
+                  <span>Complete all <strong class="text-white">10 rounds</strong> to save the Moon and unlock your downloadable <strong class="text-amber-300">Victory PDF Certificate</strong>!</span>
+                </li>
+              </ul>
+
+              <div class="pt-1.5 border-t border-slate-800 flex flex-wrap items-center gap-2 text-xs text-slate-300">
+                <span class="bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700">🖱️ <strong>Mouse / Touch</strong> to aim &amp; <strong>Click</strong> to shoot</span>
+                <span class="bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700">⌨️ <strong>← / →</strong> to aim &amp; <strong>Spacebar</strong> to shoot</span>
+              </div>
+            </div>
+
+            <!-- Cadet Registration Column -->
+            <div class="lg:col-span-5 bg-gradient-to-b from-blue-950/60 to-slate-900/90 border border-sky-500/35 rounded-2xl p-4 flex flex-col justify-between space-y-3">
+              <div class="space-y-2.5">
+                <div class="inline-block px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[11px] font-bold uppercase tracking-wider">
+                  Cadet Registration
+                </div>
+                <h3 class="font-display text-lg font-bold text-white">
+                  Enter Your Name for Your Certificate
+                </h3>
+                <p class="text-xs text-slate-300">
+                  Your first and last name will appear on your official Lunar Defense Victory PDF when you win!
+                </p>
+
+                <div class="space-y-2.5 pt-1">
+                  <div>
+                    <label for="firstNameInput" class="block text-xs font-semibold text-sky-200 mb-1">First Name <span class="text-rose-400">*</span></label>
+                    <input id="firstNameInput" type="text" maxlength="32" placeholder="e.g., Camille" class="w-full px-3.5 py-2 rounded-xl bg-slate-950/90 border border-slate-600 focus:border-sky-400 focus:outline-none text-white text-sm placeholder-slate-500" />
+                  </div>
+                  <div>
+                    <label for="lastNameInput" class="block text-xs font-semibold text-sky-200 mb-1">Last Name <span class="text-rose-400">*</span></label>
+                    <input id="lastNameInput" type="text" maxlength="32" placeholder="e.g., Laurent" class="w-full px-3.5 py-2 rounded-xl bg-slate-950/90 border border-slate-600 focus:border-sky-400 focus:outline-none text-white text-sm placeholder-slate-500" />
+                  </div>
+                </div>
+
+                <!-- Inline Validation Error Box (No alert() used!) -->
+                <p id="nameValidationError" class="hidden text-xs font-semibold text-rose-300 bg-rose-950/80 border border-rose-500/50 rounded-xl px-3 py-2">
+                  Please enter both your First Name and Last Name before launching!
+                </p>
+              </div>
+
+              <button type="button" onclick="validateAndStartGame()" class="btn-gold w-full text-slate-950 font-display font-bold py-3 px-4 rounded-2xl text-base sm:text-lg flex items-center justify-center gap-2 cursor-pointer">
+                <span>🚀 Launch Mission!</span>
+              </button>
+            </div>
+
+          </div>
+
+          <div class="flex items-center justify-start">
+            <button type="button" onclick="goToSlide(2)" class="px-5 py-2 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-600/80 text-slate-200 font-semibold text-sm transition cursor-pointer">
+              &larr; Previous
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== ROUND COMPLETE INTERMISSION OVERLAY ==================== -->
+    <section id="roundCompleteOverlay" class="hidden absolute inset-0 z-30 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm">
+      <div class="tricolor-border rounded-3xl w-full max-w-md overflow-hidden text-center">
+        <div class="tricolor-bar"></div>
+        <div class="p-6 sm:p-8 space-y-4">
+          <div class="text-5xl animate-bounce">🥐✨</div>
+          <div class="inline-block px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs font-bold uppercase tracking-wider">
+            Sector Cleared!
+          </div>
+          <h2 id="rcTitle" class="font-display text-2xl sm:text-3xl font-bold text-white">
+            Round 1 Complete!
+          </h2>
+          <p id="rcSummary" class="text-sm sm:text-base text-slate-200">
+            Bravo! You mastered <strong class="text-amber-300">devenir</strong> and earned <strong class="text-amber-300">+1 Bonus Croissant</strong>!
+          </p>
+
+          <div class="bg-slate-900/90 border border-slate-700/80 rounded-2xl p-3.5 text-left space-y-1">
+            <div class="text-[11px] uppercase tracking-wider text-sky-300 font-bold">Up Next — Round <span id="rcNextRoundNum">2</span> of 10</div>
+            <div class="flex items-baseline justify-between">
+              <span id="rcNextVerb" class="font-display text-2xl font-bold text-white">prendre</span>
+              <span id="rcNextVerbEn" class="text-xs text-slate-300 italic">(to take)</span>
+            </div>
+          </div>
+
+          <button type="button" onclick="advanceToNextRound()" class="btn-cosmic w-full text-white font-display font-bold py-3 px-6 rounded-2xl text-base sm:text-lg cursor-pointer">
+            Start Round <span id="rcBtnRoundNum">2</span> &rarr;
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== GAME OVER OVERLAY ==================== -->
+    <section id="gameOverOverlay" class="hidden absolute inset-0 z-30 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+      <div class="tricolor-border rounded-3xl w-full max-w-lg overflow-hidden text-center">
+        <div class="tricolor-bar"></div>
+        <div class="p-6 sm:p-8 space-y-4">
+          <div class="text-5xl">🥐💔</div>
+          <h2 class="font-display text-2xl sm:text-3xl font-bold text-rose-300">
+            Oh là là ! Plus de croissants !
+          </h2>
+          <p class="text-sm sm:text-base text-slate-300">
+            Your croissant supply ran out on <strong class="text-white">Round <span id="goRound">1</span> of 10</strong>, Cadet <span id="goCadetName" class="text-sky-300 font-semibold"></span>.
+          </p>
+
+          <div class="grid grid-cols-2 gap-3 text-center">
+            <div class="bg-slate-900/90 border border-slate-700/80 rounded-2xl p-3">
+              <div class="text-xs text-slate-400">Final Score</div>
+              <div id="goScore" class="font-display text-2xl font-bold text-emerald-400">0</div>
+            </div>
+            <div class="bg-slate-900/90 border border-slate-700/80 rounded-2xl p-3">
+              <div class="text-xs text-slate-400">Rounds Completed</div>
+              <div id="goRoundsDone" class="font-display text-2xl font-bold text-amber-300">0 / 10</div>
+            </div>
+          </div>
+
+          <!-- Helpful Grammar Study Tip -->
+          <div id="goGrammarTip" class="bg-blue-950/60 border border-sky-500/35 rounded-2xl p-3.5 text-left text-xs sm:text-sm text-sky-100">
+            <!-- Dynamically populated tip for the verb they missed -->
+          </div>
+
+          <button type="button" onclick="restartFullGame()" class="btn-gold w-full text-slate-950 font-display font-bold py-3.5 px-6 rounded-2xl text-base sm:text-lg cursor-pointer">
+            🔄 Try Again (Rejouer)
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VICTORY OVERLAY (2 TABS + PDF DOWNLOAD) ==================== -->
+    <section id="victoryOverlay" class="hidden absolute inset-0 z-30 flex items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
+      <div class="tricolor-border rounded-3xl w-full max-w-4xl overflow-hidden my-auto">
+        <div class="tricolor-bar"></div>
+
+        <!-- Top Victory Banner & Tab Navigation -->
+        <div class="px-5 sm:px-8 pt-5 pb-4 bg-gradient-to-r from-blue-950/70 via-slate-900 to-rose-950/70 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div class="text-xs font-bold uppercase tracking-widest text-amber-300">Mission Accomplished &bull; 10/10 Rounds</div>
+            <h2 class="font-display text-2xl sm:text-3xl font-bold text-white">
+              Félicitations - Tu gagnes!! La lune est sauvée.
+            </h2>
+          </div>
+
+          <!-- Two Clean Tabs -->
+          <div class="flex bg-slate-950/90 p-1 rounded-2xl border border-slate-700/80 self-start sm:self-auto">
+            <button id="tabBtnSummary" type="button" onclick="switchVictoryTab('summary')" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer bg-blue-600 text-white shadow">
+              Mission Summary
+            </button>
+            <button id="tabBtnCertificate" type="button" onclick="switchVictoryTab('certificate')" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer text-slate-300 hover:text-white flex items-center gap-1.5">
+              <span>📜 Victory Certificate (PDF)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB 1: MISSION SUMMARY -->
+        <div id="victoryTabSummary" class="p-5 sm:p-8 space-y-5">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-center">
+            <div class="bg-slate-900/90 border border-sky-500/30 rounded-2xl p-4">
+              <div class="text-xs uppercase tracking-wider text-sky-300 font-semibold">Lunar Cadet</div>
+              <div id="vicCadetName" class="font-display text-xl sm:text-2xl font-bold text-white mt-1 truncate">Camille Laurent</div>
+            </div>
+            <div class="bg-slate-900/90 border border-emerald-500/30 rounded-2xl p-4">
+              <div class="text-xs uppercase tracking-wider text-emerald-300 font-semibold">Final Score</div>
+              <div id="vicFinalScore" class="font-display text-2xl sm:text-3xl font-bold text-emerald-400 mt-1">12,000</div>
+            </div>
+            <div class="bg-slate-900/90 border border-amber-500/30 rounded-2xl p-4">
+              <div class="text-xs uppercase tracking-wider text-amber-300 font-semibold">Croissants Saved</div>
+              <div id="vicCroissantsLeft" class="font-display text-2xl sm:text-3xl font-bold text-amber-300 mt-1">14 🥐</div>
+            </div>
+          </div>
+
+          <!-- Mastered Verbs Recap -->
+          <div class="bg-slate-900/80 border border-slate-700/80 rounded-2xl p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-400 font-bold mb-2.5">Passé Composé Verbs Mastered in This Mission</div>
+            <div id="vicMasteredVerbsList" class="flex flex-wrap gap-2">
+              <!-- Badges populated dynamically -->
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+            <button type="button" onclick="restartFullGame()" class="w-full sm:w-auto px-6 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-display font-semibold text-sm sm:text-base transition cursor-pointer">
+              🔄 Play Again
+            </button>
+            <button type="button" onclick="switchVictoryTab('certificate')" class="btn-gold w-full sm:w-auto text-slate-950 font-display font-bold px-6 py-3 rounded-2xl text-sm sm:text-base flex items-center justify-center gap-2 cursor-pointer">
+              <span>📜 View &amp; Download Victory PDF</span>
+              <span>&rarr;</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB 2: VICTORY CERTIFICATE (PDF) -->
+        <div id="victoryTabCertificate" class="hidden p-5 sm:p-7 space-y-4">
+          <div class="flex flex-col items-center">
+            <!-- High-Res Certificate Canvas Preview (Moon + Incoming Asteroids + Cadet Name + French Victory Text) -->
+            <div class="w-full max-w-2xl rounded-2xl overflow-hidden border-2 border-amber-400/70 shadow-[0_12px_40px_rgba(0,0,0,0.75)] bg-slate-950">
+              <canvas id="certificateCanvas" width="1100" height="780" class="w-full h-auto block"></canvas>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
+            <button id="downloadPdfBtn" type="button" onclick="downloadVictoryPDF()" class="btn-gold w-full sm:w-auto text-slate-950 font-display font-bold px-7 py-3.5 rounded-2xl text-base sm:text-lg flex items-center justify-center gap-2.5 cursor-pointer">
+              <span>⬇️ Download Victory PDF</span>
+            </button>
+            <button type="button" onclick="downloadCertificatePNG()" class="w-full sm:w-auto px-5 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-semibold text-sm transition cursor-pointer">
+              🖼️ Save Certificate Image (PNG)
+            </button>
+            <button type="button" onclick="restartFullGame()" class="w-full sm:w-auto px-5 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-semibold text-sm transition cursor-pointer">
+              Play Again
+            </button>
+          </div>
+          <p id="pdfStatusMsg" class="hidden text-center text-xs text-emerald-300 font-semibold"></p>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /**
+     * ============================================================================
+     * SAUVE LA LUNE! — COMPLETE GAME ENGINE & FRENCH PASSÉ COMPOSÉ CURRICULUM
+     * ============================================================================
+     */
+
+    // ----------------------------------------------------------------------------
+    // 1. CURATED FRENCH VERB DATABASE (Mix of Être + Agreements & Irregular Avoir)
+    // ----------------------------------------------------------------------------
+    const VERB_DATABASE = [
+      {
+        infinitive: "devenir",
+        english: "to become",
+        auxiliary: "être",
+        validAux: ["suis", "es", "est", "sommes", "êtes", "sont"],
+        validParticiples: ["devenu", "devenue", "devenus", "devenues"],
+        distractors: ["ai", "as", "a", "avons", "avez", "ont", "devené", "devenée", "deveni", "pris", "fait", "allé"],
+        grammarTip: "'Devenir' is an ÊTRE verb (Dr & Mrs Vandertramp)! Shoot present forms of être (suis, es, est, sommes, êtes, sont) and past participles agreeing in gender/number (devenu, devenue, devenus, devenues)."
+      },
+      {
+        infinitive: "prendre",
+        english: "to take",
+        auxiliary: "avoir",
+        validAux: ["ai", "as", "a", "avons", "avez", "ont"],
+        validParticiples: ["pris"],
+        distractors: ["suis", "es", "est", "sommes", "êtes", "sont", "prendu", "prendé", "prends", "prendre", "mis", "fait"],
+        grammarTip: "'Prendre' uses AVOIR (ai, as, a, avons, avez, ont) and has the irregular past participle 'pris'."
+      },
+      {
+        infinitive: "écrire",
+        english: "to write",
+        auxiliary: "avoir",
+        validAux: ["ai", "as", "a", "avons", "avez", "ont"],
+        validParticiples: ["écrit"],
+        distractors: ["suis", "es", "est", "sommes", "êtes", "sont", "écrivé", "écrivu", "écris", "écrire", "lu", "dit"],
+        grammarTip: "'Écrire' uses AVOIR (ai, as, a, avons, avez, ont) and has the irregular past participle 'écrit'."
+      },
+      {
+        infinitive: "lire",
+        english: "to read",
+        auxiliary: "avoir",
+        validAux: ["ai", "as", "a", "avons", "avez", "ont"],
+        validParticiples: ["lu"],
+        distractors: ["suis", "es", "est", "sommes", "êtes", "sont", "lisé", "lisu", "lis", "lire", "bu", "vu"],
+        grammarTip: "'Lire' uses AVOIR (ai, as, a, avons, avez, ont) and has the irregular past participle 'lu'."
+      },
+      {
+        infinitive: "boire",
+        english: "to drink",
+        auxiliary: "avoir",
+        validAux: ["ai", "as", "a", "avons", "avez", "ont"],
+        validParticiples: ["bu"],
+        distractors: ["suis", "es", "est", "sommes", "êtes", "sont", "boivé", "boivu", "bois", "boire", "lu", "dû"],
+        grammarTip: "'Boire' uses AVOIR (ai, as, a, avons, avez, ont) and has the irregular past participle 'bu'."
+      },
+      {
+        infinitive: "avoir",
+        english: "to have",
+        auxiliary: "avoir",
+        validAux: ["ai", "as", "a", "avons", "avez", "ont"],
+        validParticiples: ["eu"],
+        distractors: ["suis", "es", "est", "sommes", "êtes", "sont", "avé", "avu", "avoir", "été", "bu", "su"],
+        grammarTip: "'Avoir' uses AVOIR as its helping verb (ai, as, a, avons, avez, ont) with the irregular past participle 'eu'."
+      },
+      {
+        infinitive: "être",
+        english: "to be",
+        auxiliary: "avoir",
+        validAux: ["ai", "as", "a", "avons", "avez", "ont"],
+        validParticiples: ["été"],
+        distractors: ["suis", "es", "est", "sommes", "êtes", "sont", "êtré", "êtru", "être", "eu", "fait", "né"],
+        grammarTip: "Careful! 'Être' itself uses AVOIR in the passé composé (j'ai été, tu as été...) with past participle 'été'."
+      },
+      {
+        infinitive: "devoir",
+        english: "to have to / must",
+        auxiliary: "avoir",
+        validAux: ["ai", "as", "a", "avons", "avez", "ont"],
+        validParticiples: ["dû"],
+        distractors: ["suis", "es", "est", "sommes", "êtes", "sont", "devé", "devu", "dois", "devoir", "bu", "pu"],
+        grammarTip: "'Devoir' uses AVOIR (ai, as, a, avons, avez, ont) and its masculine singular past participle is 'dû' (with a circumflex!)."
+      },
+      {
+        infinitive: "faire",
+        english: "to do / to make",
+        auxiliary: "avoir",
+        validAux: ["ai", "as", "a", "avons", "avez", "ont"],
+        validParticiples: ["fait"],
+        distractors: ["suis", "es", "est", "sommes", "êtes", "sont", "faisé", "faisu", "fais", "faire", "dit", "pris"],
+        grammarTip: "'Faire' uses AVOIR (ai, as, a, avons, avez, ont) and has the irregular past participle 'fait'."
+      },
+      {
+        infinitive: "aller",
+        english: "to go",
+        auxiliary: "être",
+        validAux: ["suis", "es", "est", "sommes", "êtes", "sont"],
+        validParticiples: ["allé", "allée", "allés", "allées"],
+        distractors: ["ai", "as", "a", "avons", "avez", "ont", "allu", "allir", "allez", "vas", "venu", "parti"],
+        grammarTip: "'Aller' is an ÊTRE verb! Shoot present forms of être (suis, es, est, sommes, êtes, sont) and agreed participles (allé, allée, allés, allées)."
+      },
+      {
+        infinitive: "venir",
+        english: "to come",
+        auxiliary: "être",
+        validAux: ["suis", "es", "est", "sommes", "êtes", "sont"],
+        validParticiples: ["venu", "venue", "venus", "venues"],
+        distractors: ["ai", "as", "a", "avons", "avez", "ont", "vené", "veni", "viens", "venir", "vu", "devenu"],
+        grammarTip: "'Venir' uses ÊTRE (suis, es, est, sommes, êtes, sont) and its past participle agrees in gender & number: venu, venue, venus, venues."
+      },
+      {
+        infinitive: "partir",
+        english: "to leave",
+        auxiliary: "être",
+        validAux: ["suis", "es", "est", "sommes", "êtes", "sont"],
+        validParticiples: ["parti", "partie", "partis", "parties"],
+        distractors: ["ai", "as", "a", "avons", "avez", "ont", "partu", "parté", "pars", "partir", "sorti", "allé"],
+        grammarTip: "'Partir' uses ÊTRE (suis, es, est, sommes, êtes, sont) with agreed past participles: parti, partie, partis, parties."
+      },
+      {
+        infinitive: "naître",
+        english: "to be born",
+        auxiliary: "être",
+        validAux: ["suis", "es", "est", "sommes", "êtes", "sont"],
+        validParticiples: ["né", "née", "nés", "nées"],
+        distractors: ["ai", "as", "a", "avons", "avez", "ont", "naîtu", "naîti", "naissé", "mort", "été"],
+        grammarTip: "'Naître' uses ÊTRE (suis, es, est, sommes, êtes, sont) and has the irregular past participle né / née / nés / nées."
+      },
+      {
+        infinitive: "voir",
+        english: "to see",
+        auxiliary: "avoir",
+        validAux: ["ai", "as", "a", "avons", "avez", "ont"],
+        validParticiples: ["vu"],
+        distractors: ["suis", "es", "est", "sommes", "êtes", "sont", "voiré", "voiri", "vois", "voir", "venu", "bu"],
+        grammarTip: "'Voir' uses AVOIR (ai, as, a, avons, avez, ont) and has the irregular past participle 'vu'."
+      },
+      {
+        infinitive: "mettre",
+        english: "to put / to place",
+        auxiliary: "avoir",
+        validAux: ["ai", "as", "a", "avons", "avez", "ont"],
+        validParticiples: ["mis"],
+        distractors: ["suis", "es", "est", "sommes", "êtes", "sont", "mettu", "metté", "mets", "mettre", "pris", "dit"],
+        grammarTip: "'Mettre' uses AVOIR (ai, as, a, avons, avez, ont) and has the irregular past participle 'mis'."
+      }
+    ];
+
+    // ----------------------------------------------------------------------------
+    // 2. WEB AUDIO SYNTHESIZER (Zero External Audio Dependencies)
+    // ----------------------------------------------------------------------------
+    class SpaceSoundFX {
+      constructor() {
+        this.ctx = null;
+        this.muted = false;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) {
+            this.ctx = new AudioCtx();
+          }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      toggleMute() {
+        this.muted = !this.muted;
+        return this.muted;
+      }
+
+      playLaser() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(760, now);
+        osc.frequency.exponentialRampToValueAtTime(190, now + 0.14);
+
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.14);
+      }
+
+      playCorrectExplosion() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        // Bright ascending chime + warm crunch
+        const freqs = [523.25, 659.25, 783.99];
+        freqs.forEach((f, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(f, now + idx * 0.04);
+          gain.gain.setValueAtTime(0.14, now + idx * 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.04 + 0.22);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + idx * 0.04);
+          osc.stop(now + idx * 0.04 + 0.23);
+        });
+      }
+
+      playWrongBuzz() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(175, now);
+        osc.frequency.linearRampToValueAtTime(95, now + 0.32);
+
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.33);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.34);
+      }
+
+      playMissedPenalty() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(280, now);
+        osc.frequency.exponentialRampToValueAtTime(110, now + 0.28);
+
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.29);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      }
+
+      playRoundFanfare() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const notes = [523.25, 659.25, 783.99, 1046.5];
+        notes.forEach((freq, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + i * 0.09);
+          gain.gain.setValueAtTime(0.16, now + i * 0.09);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.09 + 0.35);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + i * 0.09);
+          osc.stop(now + i * 0.09 + 0.36);
+        });
+      }
+
+      playVictoryFanfare() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        // La Marseillaise inspired joyful fanfare motif
+        const melody = [
+          { f: 392.0, t: 0.0, d: 0.14 },
+          { f: 523.25, t: 0.15, d: 0.25 },
+          { f: 523.25, t: 0.42, d: 0.25 },
+          { f: 587.33, t: 0.69, d: 0.25 },
+          { f: 587.33, t: 0.96, d: 0.25 },
+          { f: 783.99, t: 1.24, d: 0.35 },
+          { f: 659.25, t: 1.62, d: 0.22 },
+          { f: 523.25, t: 1.86, d: 0.55 }
+        ];
+        melody.forEach(n => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(n.f, now + n.t);
+          gain.gain.setValueAtTime(0.18, now + n.t);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + n.t + n.d);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + n.t);
+          osc.stop(now + n.t + n.d + 0.02);
+        });
+      }
+    }
+
+    const sfx = new SpaceSoundFX();
+
+    // ----------------------------------------------------------------------------
+    // 3. GAME STATE & CONFIGURATION
+    // ----------------------------------------------------------------------------
+    const TOTAL_ROUNDS = 10;
+    const POINTS_PER_HIT = 100;
+    const ROUND_TARGET_SCORE = 1200;
+    const MISSED_VALID_PENALTY = 200;
+    const STARTING_CROISSANTS = 5;
+
+    const state = {
+      phase: 'INTRO', // 'INTRO' | 'PLAYING' | 'ROUND_TRANSITION' | 'GAME_OVER' | 'VICTORY'
+      firstName: '',
+      lastName: '',
+      round: 1,
+      roundScore: 0,
+      totalScore: 0,
+      croissants: STARTING_CROISSANTS,
+      missionVerbs: [], // 10 shuffled verbs (4 être, 6 avoir)
+      currentVerb: null,
+
+      // Turret state
+      turretAngle: -Math.PI / 2, // Straight up
+      turretRecoil: 0,
+      lastShotTime: 0,
+      shotCooldownMs: 210,
+
+      // Entities
+      stars: [],
+      asteroids: [],
+      lasers: [],
+      particles: [],
+      floatingTexts: [],
+
+      // Timers & Screen FX
+      spawnTimer: 0,
+      screenShake: 0,
+      lunarImpactFlash: 0,
+      lastFrameTime: 0
+    };
+
+    // Input tracking
+    const keys = {
+      left: false,
+      right: false,
+      space: false
+    };
+
+    // Canvas & Context
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    let canvasWidth = window.innerWidth;
+    let canvasHeight = window.innerHeight;
+
+    // ----------------------------------------------------------------------------
+    // 4. RESPONSIVE CANVAS RESIZING & STARFIELD INITIALIZATION
+    // ----------------------------------------------------------------------------
+    function resizeCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvasWidth = rect.width;
+      canvasHeight = rect.height;
+
+      canvas.width = Math.floor(canvasWidth * dpr);
+      canvas.height = Math.floor(canvasHeight * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      if (state.stars.length === 0) {
+        initStars();
+      }
+    }
+
+    function initStars() {
+      state.stars = [];
+      const count = 135;
+      const starColors = ['#ffffff', '#dbeafe', '#fef3c7', '#fecdd3', '#bae6fd'];
+      for (let i = 0; i < count; i++) {
+        state.stars.push({
+          x: Math.random() * canvasWidth,
+          y: Math.random() * canvasHeight,
+          r: Math.random() * 1.8 + 0.5,
+          alpha: Math.random() * 0.7 + 0.25,
+          twinkleSpeed: Math.random() * 2.2 + 0.8,
+          phase: Math.random() * Math.PI * 2,
+          color: starColors[Math.floor(Math.random() * starColors.length)],
+          drift: Math.random() * 6 + 2
+        });
+      }
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    // ----------------------------------------------------------------------------
+    // 5. STORY SLIDES & REGISTRATION NAVIGATION
+    // ----------------------------------------------------------------------------
+    function goToSlide(slideNum) {
+      sfx.init();
+      document.getElementById('slide1').classList.toggle('hidden', slideNum !== 1);
+      document.getElementById('slide2').classList.toggle('hidden', slideNum !== 2);
+      document.getElementById('slide3').classList.toggle('hidden', slideNum !== 3);
+      document.getElementById('stepBadge').textContent = `Briefing ${slideNum} of 3`;
+
+      if (slideNum === 3) {
+        setTimeout(() => document.getElementById('firstNameInput').focus(), 60);
+      }
+    }
+
+    function validateAndStartGame() {
+      sfx.init();
+      const fInput = document.getElementById('firstNameInput');
+      const lInput = document.getElementById('lastNameInput');
+      const errBox = document.getElementById('nameValidationError');
+
+      const fName = fInput.value.trim();
+      const lName = lInput.value.trim();
+
+      if (!fName || !lName) {
+        errBox.classList.remove('hidden');
+        if (!fName) fInput.focus();
+        else lInput.focus();
+        sfx.playWrongBuzz();
+        return;
+      }
+
+      errBox.classList.add('hidden');
+      state.firstName = fName;
+      state.lastName = lName;
+
+      startNewMission();
+    }
+
+    // Allow Enter key on registration fields to start mission
+    ['firstNameInput', 'lastNameInput'].forEach(id => {
+      document.getElementById(id).addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          validateAndStartGame();
+        }
+      });
+    });
+
+    // ----------------------------------------------------------------------------
+    // 6. MISSION SETUP, VERB SELECTION & HUD UPDATES
+    // ----------------------------------------------------------------------------
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function buildTenRoundVerbSequence() {
+      // Guarantee a rich balanced mix: 4 être verbs + 6 avoir verbs
+      const etreVerbs = shuffleArray(VERB_DATABASE.filter(v => v.auxiliary === 'être'));
+      const avoirVerbs = shuffleArray(VERB_DATABASE.filter(v => v.auxiliary === 'avoir'));
+
+      const selected = [
+        ...etreVerbs.slice(0, 4),
+        ...avoirVerbs.slice(0, 6)
+      ];
+      return shuffleArray(selected);
+    }
+
+    function startNewMission() {
+      state.missionVerbs = buildTenRoundVerbSequence();
+      state.round = 1;
+      state.roundScore = 0;
+      state.totalScore = 0;
+      state.croissants = STARTING_CROISSANTS;
+      state.asteroids = [];
+      state.lasers = [];
+      state.particles = [];
+      state.floatingTexts = [];
+      state.turretAngle = -Math.PI / 2;
+
+      document.getElementById('introOverlay').classList.add('hidden');
+      document.getElementById('gameOverOverlay').classList.add('hidden');
+      document.getElementById('victoryOverlay').classList.add('hidden');
+      document.getElementById('roundCompleteOverlay').classList.add('hidden');
+
+      document.getElementById('gameHud').classList.remove('hidden');
+      document.getElementById('controlsHintPill').classList.remove('hidden');
+
+      resizeCanvas();
+      setupRound(1);
+    }
+
+    function setupRound(roundNumber) {
+      state.round = roundNumber;
+      state.roundScore = 0;
+      state.currentVerb = state.missionVerbs[roundNumber - 1];
+      state.asteroids = [];
+      state.lasers = [];
+      state.spawnTimer = 0.35; // Spawn first asteroid quickly
+      state.phase = 'PLAYING';
+
+      updateHud();
+    }
+
+    function restartFullGame() {
+      sfx.init();
+      startNewMission();
+    }
+
+    function renderCroissantSVG() {
+      return `
+        <svg viewBox="0 0 36 28" class="w-6 h-5 sm:w-7 sm:h-6 drop-shadow-[0_2px_4px_rgba(245,158,11,0.5)]">
+          <path d="M5 19 C3 14, 7 8, 13 7 C16 5, 20 5, 23 7 C29 8, 33 14, 31 19 C29 22, 26 21, 25 18 C22 20, 14 20, 11 18 C10 21, 7 22, 5 19 Z"
+                fill="#f59e0b" stroke="#fef3c7" stroke-width="1.3" />
+          <path d="M12 8 Q11 14 12 18 M18 6 Q18 13 18 19 M24 8 Q25 14 24 18"
+                fill="none" stroke="#b45309" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+      `;
+    }
+
+    function updateHud() {
+      document.getElementById('hudRound').textContent = state.round;
+      if (state.currentVerb) {
+        document.getElementById('hudTargetVerb').textContent = state.currentVerb.infinitive;
+        document.getElementById('hudVerbEnglish').textContent = `(${state.currentVerb.english})`;
+      }
+
+      document.getElementById('hudRoundScore').textContent = state.roundScore.toLocaleString();
+      const pct = Math.min(100, Math.max(0, (state.roundScore / ROUND_TARGET_SCORE) * 100));
+      document.getElementById('hudRoundBar').style.width = `${pct}%`;
+
+      document.getElementById('hudTotalScore').textContent = state.totalScore.toLocaleString();
+
+      const croissantContainer = document.getElementById('hudCroissants');
+      const displayCount = Math.min(state.croissants, 8);
+      let iconsHtml = '';
+      for (let i = 0; i < displayCount; i++) {
+        iconsHtml += renderCroissantSVG();
+      }
+      if (state.croissants > 8) {
+        iconsHtml += `<span class="text-xs font-bold text-amber-300">+${state.croissants - 8}</span>`;
+      }
+      croissantContainer.innerHTML = iconsHtml;
+      document.getElementById('hudCroissantCount').textContent = state.croissants;
+    }
+
+    // Mute button listener
+    document.getElementById('muteToggleBtn').addEventListener('click', () => {
+      const isMuted = sfx.toggleMute();
+      document.getElementById('iconSoundOn').classList.toggle('hidden', isMuted);
+      document.getElementById('iconSoundOff').classList.toggle('hidden', !isMuted);
+    });
+
+    // ----------------------------------------------------------------------------
+    // 7. TURRET AIMING & FIRING CONTROLS (Mouse, Touch & Keyboard)
+    // ----------------------------------------------------------------------------
+    function getTurretPosition() {
+      const moonSurfaceY = canvasHeight - Math.max(64, canvasHeight * 0.11);
+      return {
+        x: canvasWidth / 2,
+        y: moonSurfaceY - 8
+      };
+    }
+
+    function aimTurretAt(clientX, clientY) {
+      if (state.phase !== 'PLAYING') return;
+      const rect = canvas.getBoundingClientRect();
+      const targetX = clientX - rect.left;
+      const targetY = clientY - rect.top;
+      const turret = getTurretPosition();
+
+      let angle = Math.atan2(targetY - turret.y, targetX - turret.x);
+      // Clamp angle so turret always aims upward into space (-168 deg to -12 deg)
+      const minAngle = -Math.PI + 0.21;
+      const maxAngle = -0.21;
+      if (angle > 0) {
+        angle = targetX < turret.x ? minAngle : maxAngle;
+      } else {
+        angle = Math.max(minAngle, Math.min(maxAngle, angle));
+      }
+      state.turretAngle = angle;
+    }
+
+    function fireLaserBolt() {
+      if (state.phase !== 'PLAYING') return;
+      const now = performance.now();
+      if (now - state.lastShotTime < state.shotCooldownMs) return;
+      state.lastShotTime = now;
+
+      sfx.playLaser();
+      state.turretRecoil = 7;
+
+      const turret = getTurretPosition();
+      const barrelLen = 36;
+      const muzzleX = turret.x + Math.cos(state.turretAngle) * barrelLen;
+      const muzzleY = turret.y + Math.sin(state.turretAngle) * barrelLen;
+
+      const speed = Math.max(780, canvasHeight * 1.15);
+      state.lasers.push({
+        x: muzzleX,
+        y: muzzleY,
+        vx: Math.cos(state.turretAngle) * speed,
+        vy: Math.sin(state.turretAngle) * speed,
+        angle: state.turretAngle,
+        radius: 6
+      });
+    }
+
+    canvas.addEventListener('mousemove', (e) => {
+      aimTurretAt(e.clientX, e.clientY);
+    });
+
+    canvas.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
+      aimTurretAt(e.clientX, e.clientY);
+      fireLaserBolt();
+    });
+
+    canvas.addEventListener('touchstart', (e) => {
+      if (e.touches.length > 0) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        aimTurretAt(touch.clientX, touch.clientY);
+        fireLaserBolt();
+      }
+    }, { passive: false });
+
+    canvas.addEventListener('touchmove', (e) => {
+      if (e.touches.length > 0) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        aimTurretAt(touch.clientX, touch.clientY);
+      }
+    }, { passive: false });
+
+    window.addEventListener('keydown', (e) => {
+      if (state.phase === 'PLAYING') {
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+          keys.left = true;
+        }
+        if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+          keys.right = true;
+        }
+        if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+          e.preventDefault();
+          fireLaserBolt();
+        }
+      } else if (state.phase === 'ROUND_TRANSITION') {
+        if (e.key === ' ' || e.key === 'Enter') {
+          e.preventDefault();
+          advanceToNextRound();
+        }
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
+      if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
+    });
+
+    // ----------------------------------------------------------------------------
+    // 8. ASTEROID SPAWNING (Balanced Word Distribution & Learner-Friendly Speed)
+    // ----------------------------------------------------------------------------
+    function pickAsteroidWordForVerb(verbObj) {
+      const activeWords = new Set(state.asteroids.map(a => a.word));
+
+      // ~56% valid words (split evenly between auxiliary and past participle), ~44% distractors
+      const roll = Math.random();
+      let pool = [];
+      let isValid = false;
+      let category = '';
+
+      if (roll < 0.28) {
+        pool = verbObj.validAux;
+        isValid = true;
+        category = 'aux';
+      } else if (roll < 0.56) {
+        pool = verbObj.validParticiples;
+        isValid = true;
+        category = 'participle';
+      } else {
+        pool = verbObj.distractors;
+        isValid = false;
+        category = 'distractor';
+      }
+
+      // Prefer words not currently visible on screen
+      const freshCandidates = pool.filter(w => !activeWords.has(w));
+      const source = freshCandidates.length > 0 ? freshCandidates : pool;
+      const word = source[Math.floor(Math.random() * source.length)];
+
+      return { word, isValid, category };
+    }
+
+    function createRockyPolygon(radius) {
+      const vertices = 11;
+      const pts = [];
+      for (let i = 0; i < vertices; i++) {
+        const angle = (i / vertices) * Math.PI * 2;
+        const jag = 0.82 + Math.random() * 0.32;
+        pts.push({
+          x: Math.cos(angle) * radius * jag,
+          y: Math.sin(angle) * radius * jag
+        });
+      }
+      // Also generate 3 subtle craters
+      const craters = [
+        { x: -radius * 0.32, y: -radius * 0.22, r: radius * 0.2 },
+        { x: radius * 0.34, y: radius * 0.18, r: radius * 0.16 },
+        { x: -radius * 0.08, y: radius * 0.36, r: radius * 0.14 }
+      ];
+      return { pts, craters };
+    }
+
+    function spawnAsteroid() {
+      if (!state.currentVerb) return;
+
+      const { word, isValid, category } = pickAsteroidWordForVerb(state.currentVerb);
+      const radius = Math.max(36, Math.min(48, 28 + word.length * 2.4));
+      const marginX = radius + 28;
+      const usableWidth = Math.max(120, canvasWidth - marginX * 2);
+
+      // Find an X position that avoids overlapping existing upper-screen asteroids
+      let spawnX = marginX + Math.random() * usableWidth;
+      for (let attempt = 0; attempt < 12; attempt++) {
+        const candidateX = marginX + Math.random() * usableWidth;
+        const tooClose = state.asteroids.some(a => a.y < 150 && Math.abs(a.x - candidateX) < (a.radius + radius + 24));
+        if (!tooClose) {
+          spawnX = candidateX;
+          break;
+        }
+      }
+
+      // Learner-friendly downward speed: takes ~10.5 to 12 seconds from top to lunar surface
+      const travelDistance = Math.max(380, canvasHeight - 100);
+      const transitSeconds = 10.5 + Math.random() * 1.6;
+      const vy = travelDistance / transitSeconds;
+      const vx = (Math.random() - 0.5) * 14; // Gentle horizontal drift
+
+      const rockShape = createRockyPolygon(radius);
+
+      state.asteroids.push({
+        x: spawnX,
+        y: -radius - 10,
+        vx,
+        vy,
+        radius,
+        word,
+        isValid,
+        category,
+        rotation: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.65,
+        pts: rockShape.pts,
+        craters: rockShape.craters
+      });
+    }
+
+    // ----------------------------------------------------------------------------
+    // 9. PARTICLES, FLOATING FEEDBACK & ROUND / END-GAME TRIGGERS
+    // ----------------------------------------------------------------------------
+    function spawnExplosionParticles(x, y, palette) {
+      for (let i = 0; i < 24; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 60 + Math.random() * 210;
+        state.particles.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          r: 2.5 + Math.random() * 4,
+          color: palette[Math.floor(Math.random() * palette.length)],
+          alpha: 1,
+          life: 0.45 + Math.random() * 0.35
+        });
+      }
+    }
+
+    function addFloatingText(x, y, text, color, subtext = '') {
+      state.floatingTexts.push({
+        x,
+        y,
+        text,
+        subtext,
+        color,
+        alpha: 1,
+        vy: -52,
+        life: 1.25
+      });
+    }
+
+    function getHelpfulWrongShotHint(asteroid, verbObj) {
+      if (asteroid.category === 'distractor') {
+        const otherAux = verbObj.auxiliary === 'être'
+          ? ['ai', 'as', 'a', 'avons', 'avez', 'ont']
+          : ['suis', 'es', 'est', 'sommes', 'êtes', 'sont'];
+        if (otherAux.includes(asteroid.word)) {
+          return `Uses ${verbObj.auxiliary}!`;
+        }
+        return `Wrong participle!`;
+      }
+      return `Incorrect form!`;
+    }
+
+    function handleRoundGoalReached() {
+      sfx.playRoundFanfare();
+      state.croissants += 1;
+      updateHud();
+
+      if (state.round >= TOTAL_ROUNDS) {
+        // Player beat Round 10 -> VICTORY!
+        triggerVictoryScreen();
+        return;
+      }
+
+      // Pause into Round Transition modal
+      state.phase = 'ROUND_TRANSITION';
+      state.asteroids = [];
+      state.lasers = [];
+
+      const nextRound = state.round + 1;
+      const nextVerb = state.missionVerbs[nextRound - 1];
+
+      document.getElementById('rcTitle').textContent = `Round ${state.round} Complete!`;
+      document.getElementById('rcSummary').innerHTML = `Magnifique ! You mastered <strong class="text-amber-300">${state.currentVerb.infinitive}</strong> and earned <strong class="text-amber-300">+1 Bonus Croissant</strong>!`;
+      document.getElementById('rcNextRoundNum').textContent = nextRound;
+      document.getElementById('rcNextVerb').textContent = nextVerb.infinitive;
+      document.getElementById('rcNextVerbEn').textContent = `(${nextVerb.english})`;
+      document.getElementById('rcBtnRoundNum').textContent = nextRound;
+
+      document.getElementById('roundCompleteOverlay').classList.remove('hidden');
+    }
+
+    function advanceToNextRound() {
+      if (state.phase !== 'ROUND_TRANSITION') return;
+      sfx.init();
+      document.getElementById('roundCompleteOverlay').classList.add('hidden');
+      setupRound(state.round + 1);
+    }
+
+    function triggerGameOver() {
+      state.phase = 'GAME_OVER';
+      sfx.playWrongBuzz();
+
+      document.getElementById('goRound').textContent = state.round;
+      document.getElementById('goCadetName').textContent = `${state.firstName} ${state.lastName}`;
+      document.getElementById('goScore').textContent = state.totalScore.toLocaleString();
+      document.getElementById('goRoundsDone').textContent = `${state.round - 1} / ${TOTAL_ROUNDS}`;
+
+      if (state.currentVerb) {
+        document.getElementById('goGrammarTip').innerHTML = `
+          <div class="font-bold text-amber-300 mb-1">💡 Quick Grammar Tip for "${state.currentVerb.infinitive}":</div>
+          <div>${state.currentVerb.grammarTip}</div>
+        `;
+      }
+
+      document.getElementById('gameOverOverlay').classList.remove('hidden');
+    }
+
+    function triggerVictoryScreen() {
+      state.phase = 'VICTORY';
+      sfx.playVictoryFanfare();
+
+      const fullName = `${state.firstName} ${state.lastName}`;
+      document.getElementById('vicCadetName').textContent = fullName;
+      document.getElementById('vicFinalScore').textContent = state.totalScore.toLocaleString();
+      document.getElementById('vicCroissantsLeft').textContent = `${state.croissants} 🥐`;
+
+      // Populate mastered verbs pills
+      const verbsListEl = document.getElementById('vicMasteredVerbsList');
+      verbsListEl.innerHTML = state.missionVerbs.map(v => `
+        <span class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 border ${v.auxiliary === 'être' ? 'border-rose-400/50 text-rose-200' : 'border-sky-400/50 text-sky-200'}">
+          ${v.infinitive} <span class="opacity-70">(${v.auxiliary})</span>
+        </span>
+      `).join('');
+
+      // Render high-res Victory Certificate preview canvas
+      renderVictoryCertificateCanvas();
+
+      // Default to Tab 1 (Mission Summary) while making Tab 2 prominent
+      switchVictoryTab('summary');
+      document.getElementById('victoryOverlay').classList.remove('hidden');
+    }
+
+    function switchVictoryTab(tabName) {
+      const isSummary = tabName === 'summary';
+      document.getElementById('victoryTabSummary').classList.toggle('hidden', !isSummary);
+      document.getElementById('victoryTabCertificate').classList.toggle('hidden', isSummary);
+
+      const btnSum = document.getElementById('tabBtnSummary');
+      const btnCert = document.getElementById('tabBtnCertificate');
+
+      if (isSummary) {
+        btnSum.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer bg-blue-600 text-white shadow';
+        btnCert.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer text-slate-300 hover:text-white flex items-center gap-1.5';
+      } else {
+        btnCert.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer bg-amber-500 text-slate-950 shadow flex items-center gap-1.5';
+        btnSum.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer text-slate-300 hover:text-white';
+      }
+    }
+
+    // ----------------------------------------------------------------------------
+    // 10. MAIN UPDATE LOOP (Physics, Collisions & Scoring Rules)
+    // ----------------------------------------------------------------------------
+    function updateGame(dt) {
+      // Animate background twinkling stars in all phases
+      for (const s of state.stars) {
+        s.phase += s.twinkleSpeed * dt;
+        s.y += s.drift * dt;
+        if (s.y > canvasHeight) {
+          s.y = 0;
+          s.x = Math.random() * canvasWidth;
+        }
+      }
+
+      // Decay screen shake & impact flash
+      if (state.screenShake > 0) state.screenShake = Math.max(0, state.screenShake - dt * 28);
+      if (state.lunarImpactFlash > 0) state.lunarImpactFlash = Math.max(0, state.lunarImpactFlash - dt * 2.2);
+      if (state.turretRecoil > 0) state.turretRecoil = Math.max(0, state.turretRecoil - dt * 35);
+
+      // Update particles
+      for (let i = state.particles.length - 1; i >= 0; i--) {
+        const p = state.particles[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.life -= dt;
+        p.alpha = Math.max(0, p.life * 1.4);
+        if (p.life <= 0) state.particles.splice(i, 1);
+      }
+
+      // Update floating texts
+      for (let i = state.floatingTexts.length - 1; i >= 0; i--) {
+        const ft = state.floatingTexts[i];
+        ft.y += ft.vy * dt;
+        ft.life -= dt;
+        ft.alpha = Math.min(1, Math.max(0, ft.life * 1.1));
+        if (ft.life <= 0) state.floatingTexts.splice(i, 1);
+      }
+
+      if (state.phase !== 'PLAYING') return;
+
+      // Keyboard turret rotation
+      const rotSpeed = 2.45; // radians per second
+      const minAngle = -Math.PI + 0.21;
+      const maxAngle = -0.21;
+      if (keys.left) {
+        state.turretAngle = Math.max(minAngle, state.turretAngle - rotSpeed * dt);
+      }
+      if (keys.right) {
+        state.turretAngle = Math.min(maxAngle, state.turretAngle + rotSpeed * dt);
+      }
+
+      // Asteroid spawning cadence (comfortable for learners: max ~5 active at once)
+      state.spawnTimer -= dt;
+      const maxConcurrent = Math.min(6, 4 + Math.floor(state.round / 4));
+      if (state.spawnTimer <= 0 && state.asteroids.length < maxConcurrent) {
+        spawnAsteroid();
+        state.spawnTimer = Math.max(1.55, 2.25 - state.round * 0.05);
+      }
+
+      // Update lasers
+      for (let i = state.lasers.length - 1; i >= 0; i--) {
+        const l = state.lasers[i];
+        l.x += l.vx * dt;
+        l.y += l.vy * dt;
+        if (l.x < -30 || l.x > canvasWidth + 30 || l.y < -30 || l.y > canvasHeight + 30) {
+          state.lasers.splice(i, 1);
+        }
+      }
+
+      // Lunar surface collision threshold
+      const moonImpactY = canvasHeight - Math.max(58, canvasHeight * 0.10);
+
+      // Update asteroids & check collisions
+      for (let i = state.asteroids.length - 1; i >= 0; i--) {
+        const ast = state.asteroids[i];
+        ast.x += ast.vx * dt;
+        ast.y += ast.vy * dt;
+        ast.rotation += ast.rotSpeed * dt;
+
+        // Bounce gently off left/right screen edges
+        if (ast.x - ast.radius < 14) {
+          ast.x = ast.radius + 14;
+          ast.vx = Math.abs(ast.vx);
+        } else if (ast.x + ast.radius > canvasWidth - 14) {
+          ast.x = canvasWidth - ast.radius - 14;
+          ast.vx = -Math.abs(ast.vx);
+        }
+
+        // 1) Check Laser -> Asteroid Collision
+        let hitByLaser = false;
+        for (let j = state.lasers.length - 1; j >= 0; j--) {
+          const l = state.lasers[j];
+          const dx = ast.x - l.x;
+          const dy = ast.y - l.y;
+          const dist = Math.hypot(dx, dy);
+
+          if (dist <= ast.radius + l.radius) {
+            state.lasers.splice(j, 1);
+            hitByLaser = true;
+            break;
+          }
+        }
+
+        if (hitByLaser) {
+          state.asteroids.splice(i, 1);
+
+          if (ast.isValid) {
+            // CORRECT SHOT! +100 points
+            sfx.playCorrectExplosion();
+            state.roundScore += POINTS_PER_HIT;
+            state.totalScore += POINTS_PER_HIT;
+            state.screenShake = 5;
+
+            spawnExplosionParticles(ast.x, ast.y, ['#34d399', '#fbbf24', '#38bdf8', '#ffffff']);
+            addFloatingText(ast.x, ast.y - 10, '+100', '#34d399', `Très bien ! (${ast.word})`);
+            updateHud();
+
+            if (state.roundScore >= ROUND_TARGET_SCORE) {
+              handleRoundGoalReached();
+              return;
+            }
+          } else {
+            // WRONG SHOT! Lose 1 Croissant
+            sfx.playWrongBuzz();
+            state.croissants = Math.max(0, state.croissants - 1);
+            state.screenShake = 9;
+
+            const hint = getHelpfulWrongShotHint(ast, state.currentVerb);
+            spawnExplosionParticles(ast.x, ast.y, ['#fb7185', '#e11d48', '#f59e0b']);
+            addFloatingText(ast.x, ast.y - 10, '-1 Croissant!', '#fb7185', hint);
+            updateHud();
+
+            if (state.croissants <= 0) {
+              triggerGameOver();
+              return;
+            }
+          }
+          continue;
+        }
+
+        // 2) Check Asteroid reaching bottom of the screen (Lunar Surface)
+        if (ast.y + ast.radius * 0.75 >= moonImpactY) {
+          state.asteroids.splice(i, 1);
+
+          if (ast.isValid) {
+            // Missed a valid asteroid that SHOULD have been shot -> -200 points!
+            sfx.playMissedPenalty();
+            state.roundScore = Math.max(0, state.roundScore - MISSED_VALID_PENALTY);
+            state.totalScore = Math.max(0, state.totalScore - MISSED_VALID_PENALTY);
+            state.lunarImpactFlash = 0.85;
+            state.screenShake = 7;
+
+            spawnExplosionParticles(ast.x, moonImpactY, ['#fb923c', '#f43f5e', '#fde047']);
+            addFloatingText(ast.x, moonImpactY - 24, '-200 pts!', '#fb923c', `Missed valid word: "${ast.word}"`);
+            updateHud();
+          } else {
+            // Distractor safely burned up in lunar shield -> harmless puff
+            spawnExplosionParticles(ast.x, moonImpactY, ['#64748b', '#94a3b8']);
+          }
+        }
+      }
+    }
+
+    // ----------------------------------------------------------------------------
+    // 11. CANVAS RENDERING (Cosmic Background, Moon Colony, Turret & Asteroids)
+    // ----------------------------------------------------------------------------
+    function drawBackground() {
+      // Deep space gradient
+      const bgGrad = ctx.createLinearGradient(0, 0, 0, canvasHeight);
+      bgGrad.addColorStop(0, '#070b1e');
+      bgGrad.addColorStop(0.55, '#0e1635');
+      bgGrad.addColorStop(1, '#162044');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+      // Subtle French Tricolor Nebula Glows
+      const blueNebula = ctx.createRadialGradient(canvasWidth * 0.18, canvasHeight * 0.25, 10, canvasWidth * 0.18, canvasHeight * 0.25, canvasWidth * 0.35);
+      blueNebula.addColorStop(0, 'rgba(37, 99, 235, 0.16)');
+      blueNebula.addColorStop(1, 'rgba(37, 99, 235, 0)');
+      ctx.fillStyle = blueNebula;
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+      const redNebula = ctx.createRadialGradient(canvasWidth * 0.82, canvasHeight * 0.28, 10, canvasWidth * 0.82, canvasHeight * 0.28, canvasWidth * 0.35);
+      redNebula.addColorStop(0, 'rgba(225, 29, 72, 0.14)');
+      redNebula.addColorStop(1, 'rgba(225, 29, 72, 0)');
+      ctx.fillStyle = redNebula;
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+      // Twinkling stars
+      for (const s of state.stars) {
+        const twinkle = 0.55 + 0.45 * Math.sin(s.phase);
+        ctx.globalAlpha = s.alpha * twinkle;
+        ctx.fillStyle = s.color;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function drawLunarColonyAndTurret() {
+      const moonHeight = Math.max(64, canvasHeight * 0.11);
+      const moonTopY = canvasHeight - moonHeight;
+      const centerX = canvasWidth / 2;
+
+      ctx.save();
+
+      // Atmospheric protective shield glow along lunar horizon
+      const shieldGrad = ctx.createLinearGradient(0, moonTopY - 22, 0, moonTopY + 12);
+      shieldGrad.addColorStop(0, 'rgba(56, 189, 248, 0)');
+      shieldGrad.addColorStop(0.7, state.lunarImpactFlash > 0
+        ? `rgba(251, 113, 133, ${0.25 + state.lunarImpactFlash * 0.4})`
+        : 'rgba(56, 189, 248, 0.18)');
+      shieldGrad.addColorStop(1, 'rgba(56, 189, 248, 0.35)');
+      ctx.fillStyle = shieldGrad;
+      ctx.beginPath();
+      ctx.moveTo(0, canvasHeight);
+      ctx.lineTo(0, moonTopY + 12);
+      ctx.quadraticCurveTo(centerX, moonTopY - 26, canvasWidth, moonTopY + 12);
+      ctx.lineTo(canvasWidth, canvasHeight);
+      ctx.closePath();
+      ctx.fill();
+
+      // Main Curved Lunar Surface
+      const moonGrad = ctx.createLinearGradient(0, moonTopY - 12, 0, canvasHeight);
+      moonGrad.addColorStop(0, '#f1f5f9');
+      moonGrad.addColorStop(0.35, '#cbd5e1');
+      moonGrad.addColorStop(1, '#64748b');
+      ctx.fillStyle = moonGrad;
+      ctx.beginPath();
+      ctx.moveTo(0, canvasHeight);
+      ctx.lineTo(0, moonTopY + 18);
+      ctx.quadraticCurveTo(centerX, moonTopY - 18, canvasWidth, moonTopY + 18);
+      ctx.lineTo(canvasWidth, canvasHeight);
+      ctx.closePath();
+      ctx.fill();
+
+      // Lunar Craters
+      ctx.fillStyle = 'rgba(100, 116, 139, 0.35)';
+      const craterPositions = [0.12, 0.28, 0.72, 0.88];
+      craterPositions.forEach((ratio, idx) => {
+        const cx = canvasWidth * ratio;
+        const cy = moonTopY + 26 + (idx % 2) * 10;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, 24 + (idx % 2) * 10, 7, 0, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Left Colony Bio-Dome & Miniature Glowing Eiffel Spire (if wide enough)
+      if (canvasWidth > 420) {
+        const domeX = Math.max(95, centerX - Math.min(240, canvasWidth * 0.24));
+        const domeY = moonTopY + 10;
+
+        // Dome glass
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.22)';
+        ctx.strokeStyle = 'rgba(186, 230, 253, 0.75)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(domeX, domeY, 34, Math.PI, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Miniature Eiffel Tower Spire inside dome
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(domeX, domeY - 28);
+        ctx.lineTo(domeX - 9, domeY);
+        ctx.moveTo(domeX, domeY - 28);
+        ctx.lineTo(domeX + 9, domeY);
+        ctx.moveTo(domeX - 6, domeY - 10);
+        ctx.lineTo(domeX + 6, domeY - 10);
+        ctx.stroke();
+
+        // Glowing beacon tip
+        ctx.fillStyle = '#fef08a';
+        ctx.beginPath();
+        ctx.arc(domeX, domeY - 30, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Right Side: French Tricolor Flag on Moon
+        const flagX = Math.min(canvasWidth - 95, centerX + Math.min(240, canvasWidth * 0.24));
+        const flagY = moonTopY + 10;
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(flagX, flagY);
+        ctx.lineTo(flagX, flagY - 28);
+        ctx.stroke();
+
+        ctx.fillStyle = '#2563eb';
+        ctx.fillRect(flagX + 1, flagY - 28, 8, 13);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(flagX + 9, flagY - 28, 8, 13);
+        ctx.fillStyle = '#e11d48';
+        ctx.fillRect(flagX + 17, flagY - 28, 8, 13);
+      }
+
+      // ----- LE CANON LUNAIRE (Centered Defense Turret) -----
+      const turret = getTurretPosition();
+
+      // Subtle Dotted Laser Sight Line during active gameplay
+      if (state.phase === 'PLAYING') {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.28)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 8]);
+        ctx.beginPath();
+        ctx.moveTo(turret.x, turret.y);
+        ctx.lineTo(
+          turret.x + Math.cos(state.turretAngle) * (canvasHeight * 0.72),
+          turret.y + Math.sin(state.turretAngle) * (canvasHeight * 0.72)
+        );
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Rotating Cannon Barrel
+      ctx.save();
+      ctx.translate(turret.x, turret.y);
+      ctx.rotate(state.turretAngle);
+      const recoilOffset = -state.turretRecoil;
+
+      // Barrel body
+      const barrelGrad = ctx.createLinearGradient(0, -8, 38, 8);
+      barrelGrad.addColorStop(0, '#1e3a8a');
+      barrelGrad.addColorStop(0.5, '#3b82f6');
+      barrelGrad.addColorStop(1, '#e0f2fe');
+      ctx.fillStyle = barrelGrad;
+      ctx.strokeStyle = '#93c5fd';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(recoilOffset, -7, 38, 14, 5);
+      ctx.fill();
+      ctx.stroke();
+
+      // Tricolor accent stripes on barrel
+      ctx.fillStyle = '#2563eb';
+      ctx.fillRect(recoilOffset + 14, -6, 4, 12);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(recoilOffset + 18, -6, 4, 12);
+      ctx.fillStyle = '#e11d48';
+      ctx.fillRect(recoilOffset + 22, -6, 4, 12);
+
+      ctx.restore();
+
+      // Turret Armored Base Dome
+      const baseGrad = ctx.createRadialGradient(turret.x - 5, turret.y - 6, 3, turret.x, turret.y, 26);
+      baseGrad.addColorStop(0, '#60a5fa');
+      baseGrad.addColorStop(0.6, '#1d4ed8');
+      baseGrad.addColorStop(1, '#0f172a');
+      ctx.fillStyle = baseGrad;
+      ctx.strokeStyle = '#bae6fd';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(turret.x, turret.y + 4, 22, Math.PI, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function drawLasers() {
+      for (const l of state.lasers) {
+        ctx.save();
+        ctx.translate(l.x, l.y);
+        ctx.rotate(l.angle);
+
+        // Outer cyan glow
+        ctx.shadowColor = '#38bdf8';
+        ctx.shadowBlur = 14;
+        ctx.fillStyle = '#38bdf8';
+        ctx.beginPath();
+        ctx.roundRect(-14, -4, 28, 8, 4);
+        ctx.fill();
+
+        // Bright white core
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.roundRect(-10, -2, 20, 4, 2);
+        ctx.fill();
+
+        ctx.restore();
+      }
+    }
+
+    function drawAsteroids() {
+      for (const ast of state.asteroids) {
+        // 1) Draw rotating rocky asteroid body
+        ctx.save();
+        ctx.translate(ast.x, ast.y);
+        ctx.rotate(ast.rotation);
+
+        const rockGrad = ctx.createRadialGradient(-ast.radius * 0.3, -ast.radius * 0.3, 4, 0, 0, ast.radius);
+        rockGrad.addColorStop(0, '#78716c');
+        rockGrad.addColorStop(0.6, '#57534e');
+        rockGrad.addColorStop(1, '#292524');
+
+        ctx.fillStyle = rockGrad;
+        ctx.strokeStyle = '#a8a29e';
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+        ast.pts.forEach((p, idx) => {
+          if (idx === 0) ctx.moveTo(p.x, p.y);
+          else ctx.lineTo(p.x, p.y);
+        });
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Craters
+        ctx.fillStyle = 'rgba(28, 25, 23, 0.45)';
+        for (const c of ast.craters) {
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+
+        // 2) Draw upright, crisp, high-contrast pill label for maximum French readability
+        ctx.save();
+        ctx.font = '700 17px "Inter", sans-serif';
+        const textMetrics = ctx.measureText(ast.word);
+        const pillW = Math.max(66, textMetrics.width + 24);
+        const pillH = 30;
+        const pillX = ast.x - pillW / 2;
+        const pillY = ast.y - pillH / 2;
+
+        // Pill background
+        ctx.fillStyle = 'rgba(7, 11, 30, 0.92)';
+        ctx.strokeStyle = 'rgba(248, 250, 252, 0.85)';
+        ctx.lineWidth = 1.75;
+        ctx.beginPath();
+        ctx.roundRect(pillX, pillY, pillW, pillH, 15);
+        ctx.fill();
+        ctx.stroke();
+
+        // Word text
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(ast.word, ast.x, ast.y + 0.5);
+        ctx.restore();
+      }
+    }
+
+    function drawParticlesAndPopups() {
+      // Explosion particles
+      for (const p of state.particles) {
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Floating feedback popups (+100, -1 Croissant!, -200 pts!)
+      for (const ft of state.floatingTexts) {
+        ctx.save();
+        ctx.globalAlpha = ft.alpha;
+        ctx.textAlign = 'center';
+
+        ctx.font = '700 20px "Fredoka", sans-serif';
+        ctx.strokeStyle = 'rgba(7, 11, 30, 0.9)';
+        ctx.lineWidth = 4;
+        ctx.strokeText(ft.text, ft.x, ft.y);
+        ctx.fillStyle = ft.color;
+        ctx.fillText(ft.text, ft.x, ft.y);
+
+        if (ft.subtext) {
+          ctx.font = '600 13px "Inter", sans-serif';
+          ctx.strokeText(ft.subtext, ft.x, ft.y + 20);
+          ctx.fillStyle = '#f8fafc';
+          ctx.fillText(ft.subtext, ft.x, ft.y + 20);
+        }
+
+        ctx.restore();
+      }
+    }
+
+    function renderGame() {
+      ctx.save();
+
+      // Apply micro screen shake if active
+      if (state.screenShake > 0) {
+        const sx = (Math.random() - 0.5) * state.screenShake * 1.6;
+        const sy = (Math.random() - 0.5) * state.screenShake * 1.6;
+        ctx.translate(sx, sy);
+      }
+
+      drawBackground();
+      drawLunarColonyAndTurret();
+      drawLasers();
+      drawAsteroids();
+      drawParticlesAndPopups();
+
+      ctx.restore();
+    }
+
+    // ----------------------------------------------------------------------------
+    // 12. VICTORY CERTIFICATE ILLUSTRATION & PDF GENERATION (jsPDF)
+    // ----------------------------------------------------------------------------
+    function renderVictoryCertificateCanvas() {
+      const certCanvas = document.getElementById('certificateCanvas');
+      const c = certCanvas.getContext('2d');
+      const W = certCanvas.width;
+      const H = certCanvas.height;
+
+      // 1. Deep Cosmic Space Background
+      const bg = c.createLinearGradient(0, 0, W, H);
+      bg.addColorStop(0, '#070b1e');
+      bg.addColorStop(0.5, '#131b3a');
+      bg.addColorStop(1, '#090d24');
+      c.fillStyle = bg;
+      c.fillRect(0, 0, W, H);
+
+      // Decorative Starfield
+      for (let i = 0; i < 110; i++) {
+        const sx = ((i * 197) % (W - 40)) + 20;
+        const sy = ((i * 131) % (H - 40)) + 20;
+        const sr = (i % 3 === 0) ? 2.2 : 1.2;
+        c.fillStyle = i % 5 === 0 ? '#fde68a' : '#ffffff';
+        c.globalAlpha = 0.45 + (i % 5) * 0.1;
+        c.beginPath();
+        c.arc(sx, sy, sr, 0, Math.PI * 2);
+        c.fill();
+      }
+      c.globalAlpha = 1;
+
+      // 2. Ornate Gold & French Tricolor Outer Border
+      c.strokeStyle = '#f59e0b';
+      c.lineWidth = 8;
+      c.strokeRect(22, 22, W - 44, H - 44);
+
+      c.strokeStyle = 'rgba(253, 230, 138, 0.45)';
+      c.lineWidth = 2;
+      c.strokeRect(34, 34, W - 68, H - 68);
+
+      // Top Tricolor Ribbon Accent
+      const ribbonW = 240;
+      const ribbonX = (W - ribbonW) / 2;
+      c.fillStyle = '#2563eb';
+      c.fillRect(ribbonX, 22, ribbonW / 3, 12);
+      c.fillStyle = '#ffffff';
+      c.fillRect(ribbonX + ribbonW / 3, 22, ribbonW / 3, 12);
+      c.fillStyle = '#e11d48';
+      c.fillRect(ribbonX + (ribbonW * 2) / 3, 22, ribbonW / 3, 12);
+
+      // 3. Header Title
+      c.textAlign = 'center';
+      c.fillStyle = '#93c5fd';
+      c.font = '700 20px "Inter", sans-serif';
+      c.fillText('ACADÉMIE SPATIALE DE FRANÇAIS  •  MISSION ACCOMPLIE', W / 2, 78);
+
+      c.fillStyle = '#ffffff';
+      c.font = '700 44px "Fredoka", sans-serif';
+      c.fillText('SAUVE LA LUNE! — CERTIFICAT DE VICTOIRE', W / 2, 130);
+
+      // 4. Custom Illustrated Artwork: THE MOON WITH ASTEROIDS COMING TOWARDS IT
+      const artCenterX = W / 2;
+      const artCenterY = 278;
+
+      // Protective Shield Arc around Moon
+      c.save();
+      c.strokeStyle = 'rgba(56, 189, 248, 0.55)';
+      c.lineWidth = 4;
+      c.setLineDash([10, 8]);
+      c.beginPath();
+      c.arc(artCenterX, artCenterY + 12, 108, Math.PI * 1.08, Math.PI * 1.92);
+      c.stroke();
+      c.restore();
+
+      // Moon Glow
+      const moonGlow = c.createRadialGradient(artCenterX, artCenterY + 12, 55, artCenterX, artCenterY + 12, 130);
+      moonGlow.addColorStop(0, 'rgba(241, 245, 249, 0.35)');
+      moonGlow.addColorStop(1, 'rgba(241, 245, 249, 0)');
+      c.fillStyle = moonGlow;
+      c.beginPath();
+      c.arc(artCenterX, artCenterY + 12, 130, 0, Math.PI * 2);
+      c.fill();
+
+      // Full Crescent/Sphere Moon Illustration
+      const moonGrad = c.createRadialGradient(artCenterX - 24, artCenterY - 14, 12, artCenterX, artCenterY + 12, 82);
+      moonGrad.addColorStop(0, '#ffffff');
+      moonGrad.addColorStop(0.55, '#e2e8f0');
+      moonGrad.addColorStop(1, '#94a3b8');
+      c.fillStyle = moonGrad;
+      c.beginPath();
+      c.arc(artCenterX, artCenterY + 12, 82, 0, Math.PI * 2);
+      c.fill();
+
+      // Moon Craters
+      c.fillStyle = 'rgba(100, 116, 139, 0.32)';
+      c.beginPath(); c.arc(artCenterX - 28, artCenterY - 4, 15, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.arc(artCenterX + 30, artCenterY + 26, 18, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.arc(artCenterX - 10, artCenterY + 42, 11, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.arc(artCenterX + 18, artCenterY - 25, 9, 0, Math.PI * 2); c.fill();
+
+      // Mini Eiffel Spire & Tricolor Flag atop the Moon
+      c.strokeStyle = '#d97706';
+      c.lineWidth = 2.5;
+      c.beginPath();
+      c.moveTo(artCenterX, artCenterY - 94);
+      c.lineTo(artCenterX - 10, artCenterY - 68);
+      c.moveTo(artCenterX, artCenterY - 94);
+      c.lineTo(artCenterX + 10, artCenterY - 68);
+      c.moveTo(artCenterX - 6, artCenterY - 78);
+      c.lineTo(artCenterX + 6, artCenterY - 78);
+      c.stroke();
+
+      // Incoming Asteroids hurtling towards the Moon (with fiery tails!)
+      const incomingAsteroids = [
+        { x: artCenterX - 245, y: artCenterY - 62, r: 22, tx: -34, ty: -14 },
+        { x: artCenterX - 185, y: artCenterY + 46, r: 18, tx: -32, ty: 8 },
+        { x: artCenterX + 245, y: artCenterY - 56, r: 23, tx: 34, ty: -14 },
+        { x: artCenterX + 188, y: artCenterY + 50, r: 17, tx: 32, ty: 8 }
+      ];
+
+      incomingAsteroids.forEach(a => {
+        // Comet/Asteroid motion trail pointing toward Moon
+        const trailGrad = c.createLinearGradient(a.x, a.y, a.x + a.tx * 1.6, a.y + a.ty * 1.6);
+        trailGrad.addColorStop(0, 'rgba(251, 146, 60, 0.75)');
+        trailGrad.addColorStop(1, 'rgba(251, 146, 60, 0)');
+        c.strokeStyle = trailGrad;
+        c.lineWidth = a.r * 0.9;
+        c.lineCap = 'round';
+        c.beginPath();
+        c.moveTo(a.x, a.y);
+        c.lineTo(a.x + a.tx * 1.5, a.y + a.ty * 1.5);
+        c.stroke();
+
+        // Rocky Asteroid Body
+        c.fillStyle = '#57534e';
+        c.strokeStyle = '#d6d3d1';
+        c.lineWidth = 2;
+        c.beginPath();
+        for (let k = 0; k < 9; k++) {
+          const ang = (k / 9) * Math.PI * 2;
+          const rad = a.r * (0.85 + (k % 2) * 0.22);
+          const px = a.x + Math.cos(ang) * rad;
+          const py = a.y + Math.sin(ang) * rad;
+          if (k === 0) c.moveTo(px, py);
+          else c.lineTo(px, py);
+        }
+        c.closePath();
+        c.fill();
+        c.stroke();
+
+        // Crater dot
+        c.fillStyle = '#292524';
+        c.beginPath();
+        c.arc(a.x - a.r * 0.25, a.y - a.r * 0.15, a.r * 0.24, 0, Math.PI * 2);
+        c.fill();
+      });
+
+      // Defensive Laser Beams zapping from Moon toward incoming asteroids
+      c.strokeStyle = '#38bdf8';
+      c.lineWidth = 3;
+      c.beginPath();
+      c.moveTo(artCenterX - 75, artCenterY - 12);
+      c.lineTo(artCenterX - 195, artCenterY - 48);
+      c.moveTo(artCenterX + 75, artCenterY - 12);
+      c.lineTo(artCenterX + 195, artCenterY - 44);
+      c.stroke();
+
+      // 5. Required French Victory Message
+      c.fillStyle = '#fbbf24';
+      c.font = '700 40px "Fredoka", sans-serif';
+      c.fillText('Félicitations - Tu gagnes!! La lune est sauvée.', W / 2, 438);
+
+      // 6. Cadet Name Dedication
+      c.fillStyle = '#cbd5e1';
+      c.font = '500 20px "Inter", sans-serif';
+      c.fillText('Décerné avec honneur au Cadet Spatial :', W / 2, 488);
+
+      const studentFullName = `${state.firstName} ${state.lastName}`.trim() || 'Cadet Lunaire';
+      c.fillStyle = '#ffffff';
+      c.font = '700 46px "Fredoka", sans-serif';
+      c.fillText(studentFullName, W / 2, 545);
+
+      // Underline beneath Student Name
+      const nameWidth = Math.min(640, Math.max(280, c.measureText(studentFullName).width + 60));
+      c.strokeStyle = '#38bdf8';
+      c.lineWidth = 3;
+      c.beginPath();
+      c.moveTo(W / 2 - nameWidth / 2, 560);
+      c.lineTo(W / 2 + nameWidth / 2, 560);
+      c.stroke();
+
+      // 7. Achievement Summary & Date Footer
+      const todayStr = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      c.fillStyle = '#e2e8f0';
+      c.font = '600 19px "Inter", sans-serif';
+      c.fillText(
+        `Completed all 10 Passé Composé Rounds  •  Final Score: ${state.totalScore.toLocaleString()} pts  •  Croissants Saved: ${state.croissants}`,
+        W / 2,
+        615
+      );
+
+      // Footer signatures
+      c.fillStyle = '#94a3b8';
+      c.font = '500 16px "Inter", sans-serif';
+      c.textAlign = 'left';
+      c.fillText(`Date: ${todayStr}`, 85, 705);
+
+      c.textAlign = 'right';
+      c.fillText('Commandant de la Base Lunaire — Nouvelle-Lumière 🌙🥐', W - 85, 705);
+    }
+
+    function downloadVictoryPDF() {
+      const statusEl = document.getElementById('pdfStatusMsg');
+      try {
+        // Ensure certificate canvas is freshly rendered
+        renderVictoryCertificateCanvas();
+        const certCanvas = document.getElementById('certificateCanvas');
+        const imgData = certCanvas.toDataURL('image/png', 1.0);
+
+        if (window.jspdf && window.jspdf.jsPDF) {
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF({
+            orientation: 'landscape',
+            unit: 'pt',
+            format: 'letter'
+          });
+
+          const pageWidth = pdf.internal.pageSize.getWidth();
+          const pageHeight = pdf.internal.pageSize.getHeight();
+
+          // Fit certificate nicely with clean margin
+          const margin = 18;
+          const availW = pageWidth - margin * 2;
+          const availH = pageHeight - margin * 2;
+          const aspect = certCanvas.width / certCanvas.height;
+
+          let drawW = availW;
+          let drawH = drawW / aspect;
+          if (drawH > availH) {
+            drawH = availH;
+            drawW = drawH * aspect;
+          }
+          const offsetX = (pageWidth - drawW) / 2;
+          const offsetY = (pageHeight - drawH) / 2;
+
+          pdf.addImage(imgData, 'PNG', offsetX, offsetY, drawW, drawH);
+
+          const safeName = `${state.firstName}_${state.lastName}`.replace(/[^a-zA-Z0-9_-]/g, '_') || 'Cadet';
+          pdf.save(`Sauve_La_Lune_Certificate_${safeName}.pdf`);
+
+          statusEl.textContent = '✅ Victory PDF downloaded! Check your downloads folder.';
+          statusEl.classList.remove('hidden');
+        } else {
+          // Fallback to PNG download if jsPDF CDN was blocked offline
+          downloadCertificatePNG();
+          statusEl.textContent = '✅ Saved high-resolution Victory Certificate image!';
+          statusEl.classList.remove('hidden');
+        }
+      } catch (err) {
+        console.error('PDF generation error:', err);
+        downloadCertificatePNG();
+        statusEl.textContent = '✅ Saved high-resolution Victory Certificate image!';
+        statusEl.classList.remove('hidden');
+      }
+    }
+
+    function downloadCertificatePNG() {
+      renderVictoryCertificateCanvas();
+      const certCanvas = document.getElementById('certificateCanvas');
+      const link = document.createElement('a');
+      const safeName = `${state.firstName}_${state.lastName}`.replace(/[^a-zA-Z0-9_-]/g, '_') || 'Cadet';
+      link.download = `Sauve_La_Lune_Certificate_${safeName}.png`;
+      link.href = certCanvas.toDataURL('image/png');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // ----------------------------------------------------------------------------
+    // 13. ANIMATION LOOP ENTRY POINT
+    // ----------------------------------------------------------------------------
+    function gameLoop(timestamp) {
+      if (!state.lastFrameTime) state.lastFrameTime = timestamp;
+      const dt = Math.min(0.05, (timestamp - state.lastFrameTime) / 1000);
+      state.lastFrameTime = timestamp;
+
+      updateGame(dt);
+      renderGame();
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    window.onload = function () {
+      resizeCanvas();
+      requestAnimationFrame(gameLoop);
+    };
+  </script>
+</body>
+</html>
